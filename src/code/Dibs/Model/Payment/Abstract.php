@@ -357,14 +357,14 @@ abstract class Made_Dibs_Model_Payment_Abstract extends Mage_Payment_Model_Metho
         $info = $this->getInfoInstance();
 
         $parameters = array(
-            'currency' => $this->getDibsCurrencyCode($order->getOrderCurrencyCode()),
+            'currency' => $this->getDibsCurrencyCode($order->getBaseCurrencyCode()),
             'clientIp' => Mage::helper('core/http')->getRemoteAddr(),
             'orderId' => $order->getIncrementId(),
             'cardNumber' => $info->getCcNumber(),
             'expMonth' => $info->getCcExpMonth(),
             'expYear' => substr($info->getCcExpYear(), -2),
             'cvc' => $info->getCcCid(),
-            'amount' => $this->formatAmount($amount, $order->getOrderCurrencyCode())
+            'amount' => $this->formatAmount($amount, $order->getBaseCurrencyCode())
         );
 
         $ssIssue = $info->getCcSsIssue();
@@ -413,7 +413,7 @@ abstract class Made_Dibs_Model_Payment_Abstract extends Mage_Payment_Model_Metho
 
         $parameters = array(
             'transactionId' => $transactionId,
-            'amount' => $this->formatAmount($amount, $order->getOrderCurrencyCode()),
+            'amount' => $this->formatAmount($amount, $order->getBaseCurrencyCode()),
 
             // Their endpoint needs booleans as strings
             'doReAuthIfExpired' => (bool)$this->getConfigData('reauth_expired')
@@ -423,7 +423,7 @@ abstract class Made_Dibs_Model_Payment_Abstract extends Mage_Payment_Model_Metho
         $result = $this->_apiCall('CaptureTransaction', $parameters);
 
         $transactionString = $transactionId . '-capture-'
-                . $this->formatAmount($order->getBaseTotalDue(), $order->getOrderCurrencyCode());
+                . $this->formatAmount($order->getBaseTotalDue(), $order->getBaseCurrencyCode());
         $payment->setTransactionId($transactionString)
                 ->setIsTransactionClosed(true)
                 ->setTransactionAdditionalInfo(Mage_Sales_Model_Order_Payment_Transaction::RAW_DETAILS,
@@ -447,13 +447,13 @@ abstract class Made_Dibs_Model_Payment_Abstract extends Mage_Payment_Model_Metho
         list($transactionId,) = explode('-', $payment->getParentTransactionId());
         $parameters = array(
             'transactionId' => $transactionId,
-            'amount' => $this->formatAmount($amount, $order->getOrderCurrencyCode()),
+            'amount' => $this->formatAmount($amount, $order->getBaseCurrencyCode()),
         );
 
         $result = $this->_apiCall('RefundTransaction', $parameters);
 
         $transactionString = $transactionId . '-refund-'
-                . $this->formatAmount($order->getBaseTotalRefunded(), $order->getOrderCurrencyCode());
+                . $this->formatAmount($order->getBaseTotalRefunded(), $order->getBaseCurrencyCode());
         $payment->setTransactionId($transactionString)
                 ->setIsTransactionClosed(true)
                 ->setTransactionAdditionalInfo(Mage_Sales_Model_Order_Payment_Transaction::RAW_DETAILS,

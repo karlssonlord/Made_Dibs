@@ -133,11 +133,11 @@ class Made_Dibs_Model_Payment_Gateway extends Made_Dibs_Model_Payment_Abstract
         $language = Mage::getStoreConfig('general/locale/code')
                  ?: 'en_GB';
 
-        $totalAmount = $this->formatAmount($order->getGrandTotal(), $order->getOrderCurrencyCode());
+        $totalAmount = $this->formatAmount($order->getBaseGrandTotal(), $order->getBaseCurrencyCode());
 
         $fields = new Varien_Object;
         $fields->setMerchant($this->getConfigData('merchant_id'))
-                ->setCurrency($this->getDibsCurrencyCode($order->getOrderCurrencyCode()))
+                ->setCurrency($this->getDibsCurrencyCode($order->getBaseCurrencyCode()))
                 ->setAmount($totalAmount)
                 ->setLanguage($language)
                 ->setData('orderId', $order->getIncrementId())
@@ -194,7 +194,7 @@ class Made_Dibs_Model_Payment_Gateway extends Made_Dibs_Model_Payment_Abstract
             $name = $this->_cleanDibsValue($name);
             $sku = $this->_cleanDibsValue($item->getSku());
 
-            $amount = $this->formatAmount($item->getPriceInclTax(), $order->getOrderCurrencyCode());
+            $amount = $this->formatAmount($item->getBasePriceInclTax(), $order->getBaseCurrencyCode());
             $row = (int)$item->getQtyOrdered() . ';' .
                 $name . ';' .
                 $amount . ';' .
@@ -232,8 +232,8 @@ class Made_Dibs_Model_Payment_Gateway extends Made_Dibs_Model_Payment_Abstract
                     // We have to somehow make sure that we use the correctly
                     // calculated value, we can't rely on the shipping tax
                     // being part of the quote totals
-                    $value = $order->getShippingTaxAmount()
-                        + $order->getShippingAmount();
+                    $value = $order->getBaseShippingTaxAmount()
+                        + $order->getBaseShippingAmount();
                     break;
                 default:
                     $value = $total->getValue();
@@ -244,7 +244,7 @@ class Made_Dibs_Model_Payment_Gateway extends Made_Dibs_Model_Payment_Abstract
                 $title = $code;
             }
 
-            $amount = $this->formatAmount($value, $order->getOrderCurrencyCode());
+            $amount = $this->formatAmount($value, $order->getBaseCurrencyCode());
             $row = '1;' . $title . ';' .
                     $amount . ';' .
                     $code;
