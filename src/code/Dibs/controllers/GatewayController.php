@@ -127,6 +127,9 @@ class Made_Dibs_GatewayController extends Mage_Core_Controller_Front_Action
      */
     public function callbackAction()
     {
+        $logPrepend = '[' . uniqid() . '] ';
+
+        Mage::log($logPrepend.'Starting callback action', null, 'made_dibs.log', true);
         $write = Mage::getSingleton('core/resource')
             ->getConnection('core_write');
 
@@ -136,6 +139,7 @@ class Made_Dibs_GatewayController extends Mage_Core_Controller_Front_Action
             if ($order->getState() !== Mage_Sales_Model_Order::STATE_PENDING_PAYMENT) {
                 // Order is not in pending payment state. It's possible that the payment
                 // has already been registered via the callback.
+                Mage::log($logPrepend.'Order is not in pending payment state. Had state ' . $order->getState(), null, 'made_dibs.log', true);
                 $write->rollback();
                 return;
             }
@@ -144,12 +148,15 @@ class Made_Dibs_GatewayController extends Mage_Core_Controller_Front_Action
                 ->getMethodInstance();
 
             if (!($methodInstance instanceof Made_Dibs_Model_Payment_Gateway)) {
+                Mage::log($logPrepend.'Order is not a DIBS order', null, 'made_dibs.log', true);
                 throw new Mage_Payment_Exception('Order isn\'t a DIBS order');
             }
 
             $fields = $this->getRequest()->getPost();
+            Mage::log($logPrepend.var_export($fields,true), null, 'made_dibs.log', true);
             $mac = $methodInstance->calculateMac($fields);
             if ($mac != $fields['MAC']) {
+                Mage::log($logPrepend.'MAC verification failed for order ' . $fields['orderId'], null, 'made_dibs.log', true);
                 throw new Mage_Payment_Exception('MAC verification failed for order #' . $fields['orderId']);
             }
 
@@ -185,13 +192,17 @@ class Made_Dibs_GatewayController extends Mage_Core_Controller_Front_Action
                     $order->getResource()
                         ->updateGridRecords(array($order->getId()));
 
+                    Mage::log($logPrepend.'Order update complete', null, 'made_dibs.log', true);
+
                     break;
                 default:
+                    Mage::log($logPrepend.'Payment not accepted by DIBS', null, 'made_dibs.log', true);
                     throw new Exception('Payment not accepted by DIBS: ' . $fields['declineReason']);
             }
 
             $write->commit();
         } catch (Exception $e) {
+            Mage::log($logPrepend.'Exception: ' . $e->getMessage(), null, 'made_dibs.log', true);
             $write->rollback();
             throw $e;
         }
