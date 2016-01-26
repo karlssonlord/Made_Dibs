@@ -79,6 +79,18 @@ class Made_Dibs_GatewayController extends Mage_Core_Controller_Front_Action
                 $order->cancel()->save();
             }
         }
+
+        $quoteId = $session->getLastQuoteId();
+
+        if ($quoteId) {
+            $quote = Mage::getModel('sales/quote')->load($quoteId);
+
+            if ($quote->getId()) {
+                $quote->setIsActive(true)->save();
+                $session->setQuoteId($quote->getId());
+            }
+        }
+
         $this->_redirect('checkout/cart', array('_secure' => true));
     }
 
