@@ -196,11 +196,11 @@ class Made_Dibs_GatewayController extends Mage_Core_Controller_Front_Action
                         // Leave the transaction open for captures/refunds/etc
                         $payment->setPreparedMessage('DIBS - Payment Authorized.');
                         $payment->setIsTransactionClosed(0)
-                            ->registerAuthorizationNotification($order->getGrandTotal());
+                            ->registerAuthorizationNotification($order->getBaseGrandTotal());
                     } else {
                         // The order has been fully paid
                         $payment->setPreparedMessage('DIBS - Payment Successful.');
-                        $payment->registerCaptureNotification($order->getGrandTotal());
+                        $payment->registerCaptureNotification($order->getBaseGrandTotal());
                     }
 
                     $newOrderStatus = $methodInstance->getConfigData('order_status');
