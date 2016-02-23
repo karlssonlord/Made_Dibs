@@ -9,7 +9,7 @@ class Made_Dibs_Model_Payment_Gateway extends Made_Dibs_Model_Payment_Abstract
 {
     protected $_isGateway = true;
     protected $_isInitializeNeeded = true;
-    protected $_canUseInternal = false;
+    protected $_canUseInternal = true;
     protected $_canManageRecurringProfiles = false;
 
     protected $_code = 'made_dibs_gateway';
